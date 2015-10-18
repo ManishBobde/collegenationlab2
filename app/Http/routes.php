@@ -65,6 +65,9 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::delete('college/messages/delete/{msgId}', 'MessageController@deleteMessage');
 
+    Route::post('college/messages/associateBucket/{bucketName}', 'MessageController@changeAssociatedBucket');
+
+
     /*####################NewsController###############################*/
     Route::get('college/news/all', 'NewsController@getNewsItemsWithShortDescription');
 
@@ -91,7 +94,14 @@ Route::group(array('prefix' => 'api/v1'), function() {
     /*####################AdminController###############################*/
     //Yet to be implemented
 
+    Route::get('college/domains', 'AdminController@retrieveDomains');
+
+    Route::get('college/predefinedStreams/domain/{domainId}', 'AdminController@retrieveStreamsForDomain');
+
+    Route::get('college/departments', 'AdminController@getDepartmentForTenant');
+
     Route::get('college/user/features/{userId}', 'AdminController@retrieveRoleBasedFeatures');
+
 
     /*####################ModuleController###############################*/
 
@@ -103,10 +113,10 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     /*####################DepartmentController###############################*/
 
-    Route::post('college/create/department', 'DepartmentController@createDepartment');
+    Route::post('college/department/add', 'DepartmentController@createDepartment');
 
     /*####################PushDeviceRegController###############################*/
-    Route::post('users/registerDeviceForPush', 'AccessTokenController@registerDeviceId');
+    Route::post('device/pushnotification/save', 'AccessTokenController@registerDeviceId');
 
 
 
