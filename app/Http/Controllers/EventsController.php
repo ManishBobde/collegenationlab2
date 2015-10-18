@@ -14,15 +14,18 @@ use Illuminate\Validation\Validator;
 class EventsController extends ApiController
 {
 
-    protected $events,$errorCodes;
+    protected $events,$responseConstructor;
 
     /**
      * @param EventsRepository $events
+     * @param ResponseConstructor $responseConstructor
+     * @param Request $request
      */
-    public function __construct(EventsRepository $events,ErrorCodes $errorCodes ){
+    public function __construct(EventsRepository $events,ResponseConstructor $responseConstructor,Request $request ){
 
-        $this->errorCodes = $errorCodes;
+        $this->responseConstructor = $responseConstructor;
         $this->events = $events ;
+        $this->request=$request;
         $this->middleware('jwt.auth');
     }
 
@@ -44,7 +47,7 @@ class EventsController extends ApiController
 
             $response = [
                 'eventTitle' => $event->eventTitle,
-                'eventDesc' => $event->eventDesc,
+                'eventDescription' => $event->eventDescription,
                 'startDate' => $event->startDate,
                 'endDate' => $event->endDate,
                 'startTime' => $event->startTime,
@@ -70,7 +73,7 @@ class EventsController extends ApiController
      */
     public function createEvent(Request $request)
     {
-        return $this->events->createEvents();
+        return $this->events->createEvents($this->request->header('Authorization'));
     }
 
     /**
@@ -81,9 +84,15 @@ class EventsController extends ApiController
      */
     public function deleteEvent($eventId)
     {
+        $eventId = Input::get('eventsId');
+
         Events::destroy($eventId);
 
-        return "deleted event";
+        return $this->responseConstructor
+            ->setResultCode(200)
+            ->setResultTitle("Deleted!")
+            ->successResponse("Events Deleted!");
+
     }
 
     /**
@@ -95,9 +104,12 @@ class EventsController extends ApiController
     public function editEvent($eventId)
     {
         $event = Events::find($eventId);
+
         if(is_null($event)){
-            return "not found";
+
+            return $this->responseConstructor->setErrorCode(404)->respondWithError("Events Not Found!");
         }
+
         return $this->update($eventId);
     }
 
@@ -108,15 +120,20 @@ class EventsController extends ApiController
      * @param  int  $id
      * @return Response
      */
-    public function update($eventId)
+    public function update($event)
     {
         $input = Input::all();
         $validation = Validator::make($input, Events::$rules);
 
         if($validation->passes()){
-            $event = Events::find($eventId);
+
             $event->update($input);
-            return "Updated Event";
+
+            return $this->responseConstructor
+                ->setResultCode(200)
+                ->setResultTitle("Updated Events!")
+                ->successResponse("Event Updated!");
+
         }
     }
 
@@ -126,9 +143,9 @@ class EventsController extends ApiController
      *
      * @return Response
      */
-    public function retrieveShortEventDesc(Request $request)
+    public function getEventsWithShortDescription(Request $request)
     {
-        return $this->events->retrieveShortEventDesc();
+        return $this->events->getEventsWithShortDescription($this->request->header('Authorization'));
 
     }
 

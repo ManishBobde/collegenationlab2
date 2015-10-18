@@ -15,8 +15,9 @@ class NewsTableSeeder extends \Illuminate\Database\Seeder {
 			News::create ( [
 					'newsId' => $index,
 					'newsTitle' => $faker->title,
-					'newsDesc' =>$faker->sentence,
+					'newsDescription' =>$faker->sentence,
 					'creatorId' => RoleEnum::ADMIN,
+					'collegeId' => 1,
 					'updated_at'=> $faker->dateTime,
 					'created_at'=> $faker->dateTime
 			]);

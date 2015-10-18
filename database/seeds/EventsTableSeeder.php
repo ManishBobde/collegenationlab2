@@ -16,12 +16,13 @@ class EventsTableSeeder extends \Illuminate\Database\Seeder {
 			Events::create ( [
 					'eventId' => $index,
 					'eventTitle' => $faker->title,
-					'eventDesc' => $faker->sentence,
+					'eventDescription' => $faker->sentence,
 					'startDate' => $faker->dateTime,
 					'endDate' => $faker->dateTime,
 					'startTime' => $faker->time(),
 					'endTime' => $faker->time(),
 					'creatorId' => RoleEnum::ADMIN,
+					'collegeId' => 1,
 					'updated_at' => $faker->dateTime,
 					'created_at' => $faker->dateTime
 			] );

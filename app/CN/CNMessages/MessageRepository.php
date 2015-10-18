@@ -10,7 +10,9 @@ namespace App\CN\CNMessages;
 
 
 use App\CN\CNAccessTokens\AccessToken;
+use App\CN\CNAttachments\Attachment;
 use App\CN\CNHelpers\PaginatorHelper;
+use App\CN\CNUtilities\CNStringConstants;
 use App\CN\Paginator\MessagePaginator;
 use App\CN\PushNotifications\PushNotification;
 use App\Exceptions\ResponseConstructor;
@@ -133,32 +135,59 @@ class MessageRepository implements MessageInterface {
 
         $message = new Message();
 
-        $message->messageRecipients =Input::get('messageRecipients');
+        $message->recipients =Input::get('recipients');
 
-        $message->messageTitle =Input::get('messageTitle');
+        $message->title =Input::get('title');
 
-        $message->messageDesc = Input::get('messageDesc');
+        $message->description = Input::get('description');
 
-        $message->messageRead =Input::get('messageRead');
+        $message->isRead =Input::get('isRead');
 
         $message->senderId =Input::get('senderId');
 
-        $message->bucketId =Input::get('bucketId');
+        $totalAttachments =Input::get('totalAttachments');
+
+        $fileMetadatas = Input::get('fileMetaData');
+
+
+
         /*$user->fill(Input::all());*/
         try {
-            foreach(array($message->messageRecipients) as $recipient) {
-               // dd($recipient);
+            foreach($message->recipients as $recipient) {
+               // dd(implode(",",$message->recipients));
 
-                /*Message::firstOrCreate(['messageRecipients' => $message->messageRecipients, 'messageTitle' => $message->messageTitle,
-                    'messageDesc' => $message->messageDesc, 'messageRead' => $message->messageRead, 'senderId' => $message->senderId
-                    , 'userId' => $recipient,'bucketId' => inbox]);*/
+                $message = Message::firstOrCreate(['recipients' => implode(",",(array)$message->recipients), 'title' => $message->title,
+                    'description' => $message->description, 'isRead' => $message->isRead, 'senderId' => $message->senderId
+                    , 'userId' => $recipient,'bucketId' => inbox]);
 
-                $registrationIds = AccessToken::where('userId', $recipient)->get();
-                $this->pushNotification->send_notification("dZ4U2QLCxPM:APA91bHxzvo1TgDWDWP2qhAjKG3YByRNKJhYsdaxPwlPmAMrVmdTAjvVOKutL1Zy5CCqCK2KgE-OWz_8Z4QeFvJA6utIGbbZ34nG_ecCqv5czxdPd4EjSiFR2AhtDffuYxFmb3wi5E0v",array($message->messageTitle));
+                $registrationIds = AccessToken::where('userId', $recipient)->get(['pushRegistrationId']);
+                $pushRegId = $registrationIds->pull('pushRegistrationId');
+                if(!is_null($pushRegId))
+                    $this->pushNotification->send_notification($pushRegId,array($message->messageTitle));
             }
-            Message::firstOrCreate(['messageRecipients' => $message->messageRecipients, 'messageTitle' => $message->messageTitle,
-                'messageDesc' => $message->messageDesc, 'messageRead' => $message->messageRead, 'senderId' => $message->senderId
-                ,'userId' => $recipient, 'bucketId' => sent]);
+
+            dd($fileMetadatas);
+            foreach($fileMetadatas as $fileMetadata){
+
+                Attachment::create(['fileName' => implode(",",(array)$message->recipients), 'fileSize' => $message->title,
+                    'filetype' => $message->description, 'attachmentUrl' => $message->isRead, 'attachmentPreviewUrl' => $message->senderId
+                    , 'messageId' => $recipient,'bucketId' => inbox]);
+
+            }
+            if(!is_null($fileMetadata)){
+
+                $fileName =$fileMetadata[CNStringConstants::FILENAME];
+                $fileType = $fileMetadata[CNStringConstants::FILETYPE];
+                $fileSize = $fileMetadata[CNStringConstants::FILESIZE];
+            }else{
+
+                $fileName =null;
+                $fileType=null;
+                $fileSize = null;
+            }
+            Message::firstOrCreate(['recipients' => implode(",",(array)$message->recipients), 'title' => $message->title,
+                'description' => $message->description, 'isRead' => $message->isRead, 'senderId' => $message->senderId
+                , 'userId' => $recipient,'bucketId' => sent]);
 
         }catch (Exception $e){
 

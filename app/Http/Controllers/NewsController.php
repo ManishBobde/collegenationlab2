@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\CN\CNNews\News;
 use App\CN\CNNews\NewsRepository;
 use App\Exceptions\ErrorCodes;
+use App\Exceptions\ResponseConstructor;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -15,15 +16,19 @@ use Illuminate\Validation\Validator;
 class NewsController extends ApiController
 {
 
-    protected $news,$errorCodes;
+    protected $news,$responseConstructor,$request;
 
     /**
-     * @param NewsRepository $message
+     * @param NewsRepository $news
+     * @param ResponseConstructor $responseConstructor
+     * @param Request $request
+     * @internal param NewsRepository $message
      */
-    public function __construct(NewsRepository $news,ErrorCodes $errorCodes ){
+    public function __construct(NewsRepository $news,ResponseConstructor $responseConstructor,Request $request ){
 
-        $this->errorCodes = $errorCodes;
+        $this->responseConstructor = $responseConstructor;
         $this->news = $news ;
+        $this->request=$request;
         $this->middleware('jwt.auth');
     }
 
@@ -45,15 +50,17 @@ class NewsController extends ApiController
 
             $response = [
                 'newsTitle' => $news->newsTitle,
-                'newsDesc' => $news->newsDesc,
+                'newsDesc' => $news->newsDescription,
                 'creatorId' => $news->creatorId,
-                'newsImageUrl' => url('uploads/newsimages/'.$news->newsImageUrl)
+                'newsImageUrl' => url('uploads/newsimages/'.$news->newsImageUrl),
+                'createdDate'=>$news->created_at,
+                'modifiedDate'=>$news->updated_at
             ];
 
             return response()->json($response, $statusCode);
 
         }catch (Exception $e){
-            $this->errorCodes->setErrorCode(404)->respondWithError("Not Found!");
+            $this->responseConstructor->setErrorCode(404)->respondWithError("Not Found!");
         }
     }
 
@@ -66,7 +73,7 @@ class NewsController extends ApiController
     public function createNews(Request $request)
     {
 
-        return $this->news->createNews();
+        return $this->news->createNews($this->request->header('Authorization'));
     }
 
     /**
@@ -77,9 +84,14 @@ class NewsController extends ApiController
      */
     public function deleteNews($newsId)
     {
+        $newsId = Input::get('newsId');
+
         News::destroy($newsId);
 
-        return "deleted news";
+        return $this->responseConstructor
+            ->setResultCode(200)
+            ->setResultTitle("Deleted!")
+            ->successResponse("News Deleted!");
     }
 
     /**
@@ -91,10 +103,14 @@ class NewsController extends ApiController
     public function editNews($newsId)
     {
         $news = News::find($newsId);
+
         if(is_null($news)){
-            return "not found";
+
+            return $this->responseConstructor->setErrorCode(404)->respondWithError("News Not Found!");
+
         }
-        return $this->update($newsId);
+
+        return $this->update($news);
     }
 
     /**
@@ -104,15 +120,17 @@ class NewsController extends ApiController
      * @param  int  $id
      * @return Response
      */
-    public function update($newsId)
+    public function update($news)
     {
         $input = Input::all();
         $validation = Validator::make($input, News::$rules);
 
         if($validation->passes()){
-            $news = News::find($newsId);
             $news->update($input);
-            return "Updated news";
+            return $this->responseConstructor
+                ->setResultCode(200)
+                ->setResultTitle("Updated News!")
+                ->successResponse("News Updated!");
         }
     }
 
@@ -123,7 +141,7 @@ class NewsController extends ApiController
      */
     public function getNewsItemsWithShortDescription(Request $request)
     {
-        return $this->news->getNewsItemsWithShortDescription();
+        return $this->news->getNewsItemsWithShortDescription($this->request->header('Authorization'));
 
     }
 }

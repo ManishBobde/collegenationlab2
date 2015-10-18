@@ -33,7 +33,7 @@ class CreateUsersTable extends Migration {
 			$table->integer('collegeId')->unsigned();
 			$table->foreign('collegeId')->references('collegeId')->on('colleges');
 			$table->string('registrationToken',500);
-			$table->string('slug')->unique();
+			//$table->string('slug')->unique();
 			$table->rememberToken();
 			$table->timestamps();
 		});

@@ -15,10 +15,12 @@ class CreateNewsTable extends Migration
         Schema::create('news', function(Blueprint $table) {
             $table->increments('newsId');
             $table->string('newsTitle');
-            $table->text('newsDesc');
+            $table->text('newsDescription');
             $table->string('newsImageUrl', 100)->nullable();
             $table->integer('creatorId')->unsigned();
             $table->foreign('creatorId')->references('userId')->on('users');
+            $table->integer('collegeId')->unsigned();
+            $table->foreign('collegeId')->references('collegeId')->on('colleges');
             $table->timestamps();
         });
     }

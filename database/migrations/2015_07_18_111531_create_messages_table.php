@@ -14,10 +14,10 @@ class CreateMessagesTable extends Migration
     {
         Schema::create('messages', function(Blueprint $table) {
             $table->increments('messageId');
-            $table->string('messageTitle');
-            $table->string('messageRecipient');
-            $table->text('messageDesc')->nullable();
-            $table->boolean('messageRead');
+            $table->string('title');
+            $table->string('recipients');
+            $table->text('description')->nullable();
+            $table->boolean('isRead')->default('0');
             $table->integer('userId')->unsigned();
             $table->foreign('userId')->references('userId')->on('users');
             $table->integer('senderId')->unsigned();

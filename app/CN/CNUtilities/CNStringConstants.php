@@ -26,4 +26,12 @@ class CNStringConstants {
     const MEDIATYPE      = "mediaType";
     const OSNAME        = "osName";
 
+
+    //Attachment constants
+
+    const FILEMETADATA = "fileMetaData";
+    const FILENAME = "fileName";
+    const FILETYPE     = "fileType";
+    const FILESIZE      = "fileSize";
+
 }

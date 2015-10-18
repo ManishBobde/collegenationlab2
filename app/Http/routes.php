@@ -63,30 +63,30 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::post('college/messages/compose', 'MessageController@submitMessages');
 
-    Route::post('college/messages/delete/{msgId}', 'MessageController@deleteMessage');
+    Route::delete('college/messages/delete/{msgId}', 'MessageController@deleteMessage');
 
     /*####################NewsController###############################*/
-    Route::get('college/news', 'NewsController@getNewsItemsWithShortDescription');
+    Route::get('college/news/all', 'NewsController@getNewsItemsWithShortDescription');
 
-    Route::get('college/news/{newsId}', 'NewsController@retrieveNewsItem');
+    Route::get('college/news/view/{newsId}', 'NewsController@retrieveNewsItem');
 
     Route::post('college/news/add', 'NewsController@createNews');
 
-    Route::post('college/news/delete/{newsId}', 'NewsController@deleteNews');
+    Route::delete('college/news/delete/{newsId}', 'NewsController@deleteNews');
 
-    Route::post('college/news/edit/{newsId}', 'NewsController@editNews');
+    Route::put('college/news/edit/{newsId}', 'NewsController@editNews');
 
     /*####################EventController###############################*/
 
-    Route::get('college/events', 'EventsController@retrieveShortEventDesc');
+    Route::get('college/events/all', 'EventsController@getEventsWithShortDescription');
 
-    Route::get('college/events/{eventId}', 'EventsController@retrieveEventItem');
+    Route::get('college/events/view/{eventId}', 'EventsController@retrieveEventItem');
 
     Route::post('college/events/add', 'EventsController@createEvent');
 
-    Route::post('college/events/delete/{eventId}', 'EventsController@deleteEvent');
+    Route::delete('college/events/delete/{eventId}', 'EventsController@deleteEvent');
 
-    Route::post('college/events/edit/{eventId}', 'EventsController@editEvent');
+    Route::put('college/events/edit/{eventId}', 'EventsController@editEvent');
 
     /*####################AdminController###############################*/
     //Yet to be implemented

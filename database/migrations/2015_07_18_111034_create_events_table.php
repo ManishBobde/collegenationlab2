@@ -15,7 +15,7 @@ class CreateEventsTable extends Migration
         Schema::create('events', function(Blueprint $table) {
             $table->increments('eventId');
             $table->string('eventTitle');
-            $table->text('eventDesc');
+            $table->text('eventDescription');
             $table->timestamp('startDate');
             $table->timestamp('endDate')->nullable();
             $table->time('startTime');
@@ -23,6 +23,8 @@ class CreateEventsTable extends Migration
             $table->string('eventImageUrl', 100)->nullable();
             $table->integer('creatorId')->unsigned();
             $table->foreign('creatorId')->references('userId')->on('users');
+            $table->integer('collegeId')->unsigned();
+            $table->foreign('collegeId')->references('collegeId')->on('colleges');
             $table->timestamps();
         });
     }

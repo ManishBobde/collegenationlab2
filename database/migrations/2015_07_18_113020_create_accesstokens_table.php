@@ -15,7 +15,7 @@ class CreateAccesstokensTable extends Migration
         Schema::create('accesstokens', function(Blueprint $table) {
             $table->increments('accessTokenId');
             $table->string('accessToken');
-            $table->string('deviceId')->unique()->nullable();//Type of Device-Mobile,Tab,PC
+            $table->string('pushRegistrationId')->unique()->nullable();
             $table->string('deviceType')->nullable();//Type of Device-Mobile,Tab,PC
             $table->string('mediaType')->nullable();//Browser or app
             $table->string('osName')->nullable();//android/iphone

@@ -22,7 +22,7 @@ class Events extends Model {
      *
      * @var array
      */
-    protected $fillable = ['eventTitle','eventDesc','startDate','endDate','startTime','endTime','eventImageUrl','isRead'];
+    protected $fillable = ['eventTitle','eventDescription','startDate','endDate','startTime','endTime','eventImageUrl','isRead'];
     /**
      * The attributes excluded from the model's JSON form.
      *

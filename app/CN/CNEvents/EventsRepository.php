@@ -20,17 +20,17 @@ use Illuminate\Support\Facades\Input;
 
 class EventsRepository {
 
-    protected $codes,$eventTrans,$paginatorHelper;
+    protected $responseConstructor,$eventTrans,$paginatorHelper;
 
     /**
      * @param EventTransformer $eventTrans
      * @param ErrorCodes $codes
      * @param PaginatorHelper $paginatorHelper
      */
-    public function __construct(EventTransformer $eventTrans ,ResponseConstructor $codes,PaginatorHelper $paginatorHelper){
+    public function __construct(EventTransformer $eventTrans ,ResponseConstructor $responseConstructor,PaginatorHelper $paginatorHelper){
 
         $this->eventTrans=$eventTrans;
-        $this->codes  = $codes;
+        $this->responseConstructor  = $responseConstructor;
         $this->paginatorHelper= $paginatorHelper;
 
     }
@@ -39,9 +39,15 @@ class EventsRepository {
      * Method fetches the events with short description
      * @return mixed
      */
-    public function retrieveShortEventDesc()
+    public function getEventsWithShortDescription($ttoken)
     {
-        $events = Events::all();
+        $id = $this->getUserIdFromToken($ttoken);
+
+        $collegeData = User::where('userId',$id)->get(['collegeId']);
+
+        $collegeId = $collegeData->pull('collegeId');
+
+        $events = Events::where('collegeId',$collegeId);
 
         $data= $this->eventTrans->transformCollection($events->toArray());
 
@@ -63,13 +69,13 @@ class EventsRepository {
      * Method for creation of events
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function createEvents()
+    public function createEvents($token)
     {
         $event = new Events();
 
         $event->eventTitle =Input::get('eventTitle');
 
-        $event->eventDesc = Input::get('eventDesc');
+        $event->eventDescription = Input::get('eventDescription');
 
         $event->startDate =Input::get('startDate');
 
@@ -79,7 +85,17 @@ class EventsRepository {
 
         $event->endTime =Input::get('endTime');
 
-        $event->userId =Input::get('userId');
+        $ttoken = $this->retrieveTokenFromHeader($token);
+
+        $id = $this->getUserIdFromToken($ttoken);
+
+        $collegeData = User::where('userId',$id)->get(['collegeId']);
+
+        $collegeId = $collegeData->pull('collegeId');
+
+        $event->creatorId = $id ;
+
+        $event->collegeId = $collegeId;
 
         if ( Input::hasFile('eventImageUrl')) {
 
@@ -99,7 +115,7 @@ class EventsRepository {
 
         }catch (Exception $e){
 
-            return response()->json($this->codes->respondInternalError());
+            return $this->responseConstructor->respondInternalError("Events could not be created");
 
         }
 

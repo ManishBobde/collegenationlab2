@@ -23,13 +23,13 @@ class Message extends Model {
      *
      * @var array
      */
-    protected $fillable = ['messageRecipients','messageTitle','messageDesc'];
+    protected $fillable = ['recipients','title','description','userId','senderId','bucketId'];
     /**
      * The attributes excluded from the model's JSON form.
      *
      * @var array
      */
-    protected $hidden = ['messageRead'];
+    protected $hidden = ['isRead'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -38,5 +38,10 @@ class Message extends Model {
 
         return $this->belongsTo('App\CN\CNBuckets\Bucket','','');
     }*/
+
+    public function attachments()
+    {
+        return $this->hasMany('App\CN\CNAttachments','messageId','messageId');
+    }
 
 }

@@ -10,34 +10,42 @@ namespace App\CN\CNNews;
 
 
 use App\CN\CNHelpers\PaginatorHelper;
+use App\CN\CNUsers\User;
+use App\CN\Repositories\TokenBaseRepository;
 use App\CN\Transformers\NewsTransformer;
 use App\Exceptions\ErrorCodes;
 use App\Exceptions\ResponseConstructor;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Input;
 
-class NewsRepository {
+class NewsRepository extends TokenBaseRepository{
 
-    protected $paginatorHelper, $codes,$newTrans;
+    protected $paginatorHelper, $responseConstructor,$newTrans;
 
     /**
      * @param JWTAuth $auth
      * @param UserTransformer $userTransformer
      * @param ErrorCodes $codes
      */
-    public function __construct(NewsTransformer $newsTrans ,PaginatorHelper $paginatorHelper ,ResponseConstructor $codes)
+    public function __construct(NewsTransformer $newsTrans ,PaginatorHelper $paginatorHelper ,ResponseConstructor $responseConstructor)
     {
         $this->newsTrans=$newsTrans;
         $this->paginatorHelper = $paginatorHelper;
-        $this->codes = $codes;
+        $this->responseConstructor = $responseConstructor;
     }
     /*
      * Method fetches the events
      * @return mixed
      */
-    public function getNewsItemsWithShortDescription()
+    public function getNewsItemsWithShortDescription($ttoken)
     {
-        $news = News::all();/*Needs to rework*/
+        $id = $this->getUserIdFromToken($ttoken);
+
+        $collegeData = User::where('userId',$id)->get(['collegeId']);
+
+        $collegeId = $collegeData->pull('collegeId');
+
+        $news = News::where('collegeId',$collegeId);
 
         $data= $this->newsTrans->transformCollection($news->toArray());
 
@@ -56,15 +64,25 @@ class NewsRepository {
      * Method to create event
      *
      */
-    public function createNews()
+    public function createNews($token)
     {
         $news = new News();
 
         $news->newsTitle = Input::get('newsTitle');
 
-        $news->newsDesc = Input::get('newsDesc');
+        $news->newsDescription = Input::get('newsDescription');
 
-        $news->creatorId = Input::get('creatorId');
+        $ttoken = $this->retrieveTokenFromHeader($token);
+
+        $id = $this->getUserIdFromToken($ttoken);
+
+        $collegeData = User::where('userId',$id)->get(['collegeId']);
+
+        $collegeId = $collegeData->pull('collegeId');
+
+        $news->creatorId = $id ;
+
+        $news->collegeId = $collegeId;
 
         if ( Input::hasFile('newsImageUrl')) {
 
@@ -84,7 +102,7 @@ class NewsRepository {
 
         } catch (Exception $e) {
 
-            return response()->json(['error' => 'News could not be created'], HttpResponse::HTTP_CONFLICT);
+            return $this->responseConstructor->respondInternalError("News could not be created");
 
         }
     }

@@ -27,10 +27,10 @@ class MessageTableSeeder extends \Illuminate\Database\Seeder {
 		$faker = Faker::create ();
 		foreach ( range ( 1, 10 ) as $index ) {
 			Message::create([
-				'messageTitle' => $faker->sentence,
-				'messageRecipient' => $faker->name,
-				'messageDesc' => $faker->text,
-				'messageRead' => 1,
+				'title' => $faker->sentence,
+				'recipients' => $faker->name,
+				'description' => $faker->text,
+				'isRead' => 1,
 				'userId' =>1,
 				'senderId' => 1,
 				'bucketId' =>1,

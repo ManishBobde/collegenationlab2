@@ -271,6 +271,7 @@ class UserController extends ApiController {
 
 		}catch (Exception $uve){
 
+
 			return response()->json([
 
 				"resultCode"=>500,

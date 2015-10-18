@@ -24,7 +24,6 @@ class UserTableSeeder extends \Illuminate\Database\Seeder {
 					'roleId' => RoleEnum::ADMIN,
 					'deptId' => 1,
 					'collegeId' => 1,
-					'slug'=>'Admin_Admin',
 					'updated_at' => $faker->dateTime, // This is automatically added for the statement : $table->timestamp();
 					'created_at' => $faker->dateTime // This is automatically added for the statement : $table->timestamp();
 			] );
@@ -39,7 +38,6 @@ class UserTableSeeder extends \Illuminate\Database\Seeder {
 			'roleId' => RoleEnum::LECTURER,
 			'deptId' => 1,
 			'collegeId' => 1,
-			'slug'=>'Manish_Admin',
 			'updated_at' => $faker->dateTime, // This is automatically added for the statement : $table->timestamp();
 			'created_at' => $faker->dateTime // This is automatically added for the statement : $table->timestamp();
 		] );

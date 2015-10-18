@@ -22,7 +22,7 @@ class News extends Model {
      *
      * @var array
      */
-    protected $fillable = ['newsTitle','newsDesc','newsImageUrl'];
+    protected $fillable = ['newsTitle','newsDescription','newsImageUrl','creatorId','collegeId'];
     /**
      * The attributes excluded from the model's JSON form.
      *

@@ -16,7 +16,7 @@ class AccessTokenTableSeeder extends \Illuminate\Database\Seeder {
 			AccessToken::create ( [
 					'accessTokenId' => 1,
 					'accessToken' => '33067484-c64d-4835-b356-6d2cbb299d6e',
-					'deviceId'=>'33067484-c64d-4835-b356-6d2cbb299d6e',
+					'pushRegistrationId'=>'33067484-c64d-4835-b356-6d2cbb299d6e',
 					'deviceType' => 1,
 					'mediaType' => 1,
 					'osName' => 'Android',
