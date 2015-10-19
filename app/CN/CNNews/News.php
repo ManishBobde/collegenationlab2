@@ -32,7 +32,8 @@ class News extends Model {
 
     public static $rules =array(
         'newsTitle' => 'required',
-        'newsDesc' => 'required'
+        'newsDescription' => 'required',
+        'newsImageUrl'=>'image'
     );
 
 }

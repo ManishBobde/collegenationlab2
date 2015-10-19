@@ -33,9 +33,10 @@ class Events extends Model {
 
     public static $rules =array(
         'eventTitle' => 'required',
-        'eventDesc' => 'required',
-        'eventDate' => 'required',
-        'eventTime' => 'required'
+        'eventDescription' => 'required',
+        'startDate' => 'required',
+        'startTime' => 'required',
+        'eventImageUrl' => 'image'
     );
 
 }
