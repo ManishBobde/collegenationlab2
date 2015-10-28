@@ -22,7 +22,7 @@ class EmailRequest extends Request {
 	public function rules()
 	{
 		return [
-			'email' => 'required'
+			'email' => 'required|email'
 		];
 	}
 

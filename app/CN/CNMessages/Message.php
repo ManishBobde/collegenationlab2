@@ -2,8 +2,14 @@
 
 use App\CN\CNBuckets\Bucket;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Message extends Model {
+
+    use SoftDeletes;
+
+    protected $dates = ['deleted_at'];
+
 
     /**
      * The database table used by the model.

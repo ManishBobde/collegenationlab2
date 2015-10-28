@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\CN\CNEvents\Events;
 use App\CN\CNEvents\EventsRepository;
 use App\Exceptions\ErrorCodes;
+use Exception;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -60,8 +61,10 @@ class EventsController extends ApiController
 
         }catch (Exception $e){
 
-            $this->errorCodes->setErrorCode(404)->respondWithError("Not Found!");
-
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
         }
     }
 
@@ -73,7 +76,16 @@ class EventsController extends ApiController
      */
     public function createEvent(Request $request)
     {
-        return $this->events->createEvents($this->request->header('Authorization'));
+        try {
+            return $this->events->createEvents($this->request->header('Authorization'));
+
+        }catch(Exception $e){
+
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
+        }
     }
 
     /**
@@ -82,16 +94,23 @@ class EventsController extends ApiController
      * @param  int  $id
      * @return Response
      */
-    public function deleteEvent($eventId)
+    public function deleteEvent()
     {
-        $eventId = Input::get('eventsId');
+        try {
+            $eventId = Input::get('eventsIds');
 
-        Events::destroy($eventId);
+            Events::destroy([$eventId]);
 
-        return $this->responseConstructor
-            ->setResultCode(200)
-            ->setResultTitle("Deleted!")
-            ->successResponse("Events Deleted!");
+            return $this->responseConstructor
+                ->setResultCode(200)
+                ->setResultTitle("Deleted!")
+                ->successResponse("Events Deleted!");
+        }catch (Exception $e){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle("Error occured while news deletion")
+                ->respondWithError("Error occured while news deletion");
+        }
 
     }
 
@@ -103,14 +122,25 @@ class EventsController extends ApiController
      */
     public function editEvent($eventId)
     {
-        $event = Events::find($eventId);
+        try {
 
-        if(is_null($event)){
+            $event = Events::findOrFail($eventId);
 
-            return $this->responseConstructor->setErrorCode(404)->respondWithError("Events Not Found!");
+            if(is_null($event)){
+
+                return $this->responseConstructor
+                    ->setResultCode(404)
+                    ->setResultTitle("Events not found")
+                    ->respondWithError("Events not found");            }
+
+            return $this->update($eventId);
+
+        }catch (Exception $e){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
         }
-
-        return $this->update($eventId);
     }
 
     /**
@@ -134,6 +164,8 @@ class EventsController extends ApiController
                 ->setResultTitle("Updated Events!")
                 ->successResponse("Event Updated!");
 
+        }else{
+            throw new Exception("Validation error Or Update error");
         }
     }
 
@@ -145,7 +177,15 @@ class EventsController extends ApiController
      */
     public function getEventsWithShortDescription(Request $request)
     {
-        return $this->events->getEventsWithShortDescription($this->request->header('Authorization'));
+        try {
+            return $this->events->getEventsWithShortDescription($this->request->header('Authorization'));
+        }catch (Exception $e){
+
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
+        }
 
     }
 

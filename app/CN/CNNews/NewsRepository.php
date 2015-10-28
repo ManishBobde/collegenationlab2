@@ -15,6 +15,7 @@ use App\CN\Repositories\TokenBaseRepository;
 use App\CN\Transformers\NewsTransformer;
 use App\Exceptions\ErrorCodes;
 use App\Exceptions\ResponseConstructor;
+use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Input;
 
@@ -39,25 +40,31 @@ class NewsRepository extends TokenBaseRepository{
      */
     public function getNewsItemsWithShortDescription($ttoken)
     {
-        $id = $this->getUserIdFromToken($ttoken);
+        try {
+            $id = $this->getUserIdFromToken($ttoken);
 
-        $collegeData = User::where('userId',$id)->get(['collegeId']);
+            $collegeData = User::where('userId', $id)->get(['collegeId']);
 
-        $collegeId = $collegeData->pull('collegeId');
+            $collegeId = $collegeData->pull('collegeId');
 
-        $news = News::where('collegeId',$collegeId);
+            $news = News::where('collegeId', $collegeId);
 
-        $data= $this->newsTrans->transformCollection($news->toArray());
+            $data = $this->newsTrans->transformCollection($news->toArray());
 
-        $items = collect($data);
+            $items = collect($data);
 
-        $page = Input::get('page', 1);
+            $page = Input::get('page', 1);
 
-        $perPage = 2;
+            $perPage = 2;
 
-        $lengthpage  = new LengthAwarePaginator($items->forPage($page, $perPage),$items->count(), $perPage, $page);
+            $lengthpage = new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page);
 
-        return $this->paginatorHelper->respondWithPagination($lengthpage);
+            return $this->paginatorHelper->respondWithPagination($lengthpage);
+        }catch(Exception $e){
+
+            throw new Exception("Error while retrieving news");
+
+        }
     }
 
     /*

@@ -18,8 +18,7 @@ class ForgotPassword extends Event
      *
      * @return void
      */
-    public function
-    __construct(User $user)
+    public function __construct(User $user)
     {
         $this->user = $user;
     }

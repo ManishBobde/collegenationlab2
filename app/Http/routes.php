@@ -40,13 +40,17 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::get('auth/sendOTP/{mobileNo}', 'UserController@sendOtpToVerifyMobileNumber');
 
-    Route::get('college/user/forgotpassword/{userId}', 'UserController@forgotPassword');
-
     Route::post('college/user/changepassword/{userId}', 'UserController@changePassword');
 
     Route::get('college/user/profile','UserController@getUserProfile');
 
     Route::get('college/users','UserController@getUsersWithinTenant');
+
+    /*************************ForgotPassword Routes***************************/
+    Route::post('college/user/forgotpassword', 'UserController@forgotPassword');
+
+    /*************************ForgotPassword Routes***************************/
+
 
 
     //Route::get('college/user/features/{userId}','UserController@getUserFeatures');
@@ -63,9 +67,11 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::post('college/messages/compose', 'MessageController@submitMessages');
 
-    Route::delete('college/messages/delete/{msgId}', 'MessageController@deleteMessage');
+    Route::delete('college/messages/delete', 'MessageController@deleteMessage');
 
     Route::post('college/messages/associateBucket/{bucketName}', 'MessageController@changeAssociatedBucket');
+
+    Route::get('college/messages/restore', 'MessageController@restoreMessages');
 
 
     /*####################NewsController###############################*/
@@ -75,7 +81,7 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::post('college/news/add', 'NewsController@createNews');
 
-    Route::delete('college/news/delete/{newsId}', 'NewsController@deleteNews');
+    Route::delete('college/news/delete', 'NewsController@deleteNews');
 
     Route::put('college/news/edit/{newsId}', 'NewsController@editNews');
 
@@ -87,7 +93,7 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::post('college/events/add', 'EventsController@createEvent');
 
-    Route::delete('college/events/delete/{eventId}', 'EventsController@deleteEvent');
+    Route::delete('college/events/delete', 'EventsController@deleteEvent');
 
     Route::put('college/events/edit/{eventId}', 'EventsController@editEvent');
 
@@ -102,6 +108,11 @@ Route::group(array('prefix' => 'api/v1'), function() {
 
     Route::get('college/user/features/{userId}', 'AdminController@retrieveRoleBasedFeatures');
 
+    Route::get('college/user/suspend/{userId}', 'AdminController@suspendUser');
+
+    Route::get('college/user/resume/{userId}', 'AdminController@resumeUser');
+
+    Route::get('college/user/delete/{userId}', 'AdminController@deleteUser');
 
     /*####################ModuleController###############################*/
 
@@ -112,7 +123,7 @@ Route::group(array('prefix' => 'api/v1'), function() {
     Route::post('college/user/register', 'CollegeController@registerCollege');
 
     /*####################DepartmentController###############################*/
-
+//Add Department in Department controller
     Route::post('college/department/add', 'DepartmentController@createDepartment');
 
     /*####################PushDeviceRegController###############################*/
@@ -123,6 +134,13 @@ Route::group(array('prefix' => 'api/v1'), function() {
 });
 
 //Route::post('auth/register', 'UserController@postRegister');
+/*************************ForgotPassword Routes***************************/
+Route::get('password/reset/{token}', 'Auth\PasswordController@getReset');
+
+Route::post('password/reset', 'Auth\PasswordController@postReset');
+/*************************ForgotPassword Routes***************************/
 
 Route::post('register/college', 'UserController@postRegister');
+
+
 

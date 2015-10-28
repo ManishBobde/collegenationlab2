@@ -67,9 +67,18 @@ class MessageController extends ApiController {
      *
      * @return Response
      */
-    public function deleteMessage($msgId)
+    public function deleteMessage()
     {
-        return $this->message->deleteMessage($msgId);
+        return $this->message->deleteMessage();
+
+    }
+
+    /**
+     * Messages to restore from Trash
+     */
+    public function restoreMessages(){
+
+        return $this->message->restoreMessages();
 
     }
 

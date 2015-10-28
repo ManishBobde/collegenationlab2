@@ -26,6 +26,9 @@ class CreateMessagesTable extends Migration
             $table->foreign('bucketId')->references('bucketId')->on('buckets');
             $table->timestamps();
         });
+        Schema::table('messages', function ($table) {
+            $table->softDeletes();
+        });
     }
 
     /**

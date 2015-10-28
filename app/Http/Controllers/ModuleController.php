@@ -31,7 +31,7 @@ class ModuleController extends ApiController
         //$roles =  $user->roles()->where('role_type', 1)->first();
 
        // $modules = $college->modules()->orderBy('moduleName')->get();
-        if (Cache::has('college_users_cache'))
+        if (Cache::has('college_modules_cache'))
         {
             $modules =  Cache::get('college_modules_cache');
 

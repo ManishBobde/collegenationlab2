@@ -53,13 +53,19 @@ class MessageRepository implements MessageInterface {
      */
     public function retrieveInboxMessages($userId)
     {
-        $inboxMessages = Message::where('bucketId', inbox)
-            ->where('userId', $userId)
-            ->get();
+        try{
+            $inboxMessages = Message::where('bucketId', inbox)
+                ->where('userId', $userId)
+                ->get();
 
-        $items = collect($inboxMessages);
+            $items = collect($inboxMessages);
 
-        return $this->paginateResults($items);
+            return $this->paginateResults($items);
+        }catch (Exception $e){
+
+            throw new Exception("Inbox Messages retrievel error");
+
+        }
 
         /* $before=0;$after=0;
 
@@ -87,13 +93,19 @@ class MessageRepository implements MessageInterface {
      */
     public function retrieveSentMessages($userId)
     {
-        $sentMessages =  Message::where('bucketId', sent)
-            ->where('userId', $userId)
-            ->get();
+        try{
+            $sentMessages =  Message::where('bucketId', sent)
+                ->where('userId', $userId)
+                ->get();
 
-        $items = collect($sentMessages);
+            $items = collect($sentMessages);
 
-        return $this->paginateResults($items);
+            return $this->paginateResults($items);
+        }catch (Exception $e){
+
+            throw new Exception("Sent Messages retrievel error");
+
+        }
     }
 
     /**
@@ -102,13 +114,19 @@ class MessageRepository implements MessageInterface {
      */
     public function retrieveDraftMessages($userId)
     {
-        $draftMessages =  Message::where('bucketId', draft)
-            ->where('userId', $userId)
-            ->get();
+        try{
+            $draftMessages =  Message::where('bucketId', draft)
+                ->where('userId', $userId)
+                ->get();
 
-        $items = collect($draftMessages);
+            $items = collect($draftMessages);
 
-        return $this->paginateResults($items);
+            return $this->paginateResults($items);
+        }catch (Exception $e){
+
+            throw new Exception("Draft Messages retrievel error");
+
+        }
     }
 
     /**
@@ -117,13 +135,20 @@ class MessageRepository implements MessageInterface {
      */
     public function retrieveTrashedMessages($userId)
     {
-        $trashMessages =  Message::where('bucketId', trash)
-            ->where('userId', $userId)
-            ->get();
+        try {
+            $trashMessages = Message::onlyTrashed()
+                ->where('bucketId', trash)
+                ->where('userId', $userId)
+                ->get();
 
-        $items = collect($trashMessages);
+            $items = collect($trashMessages);
 
-        return $this->paginateResults($items);
+            return $this->paginateResults($items);
+        }catch(Exception $e){
+
+            throw new Exception("Trashed Messages retrievel error");
+
+        }
     }
 
     /**
@@ -154,7 +179,7 @@ class MessageRepository implements MessageInterface {
         /*$user->fill(Input::all());*/
         try {
             foreach($message->recipients as $recipient) {
-               // dd(implode(",",$message->recipients));
+                // dd(implode(",",$message->recipients));
 
                 $message = Message::firstOrCreate(['recipients' => implode(",",(array)$message->recipients), 'title' => $message->title,
                     'description' => $message->description, 'isRead' => $message->isRead, 'senderId' => $message->senderId
@@ -212,9 +237,56 @@ class MessageRepository implements MessageInterface {
      */
     public function deleteMessages()
     {
+        try {
+            $messageIds = Input::get('messageIds');
+            foreach($messageIds as $messageId){
 
+                $message = Message::findOrFail($messageId);
+
+                $message->delete();
+
+            }
+
+            return $this->responseConstructor
+                ->setResultCode(200)
+                ->setResultTitle("Messages sent to Trash!")
+                ->successResponse("Messages sent to trash Deleted!");
+        }catch (Exception $e){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle("Error occured while news deletion")
+                ->respondWithError("Error occured while news deletion");
+        }
     }
 
+    /**
+     *
+     */
+    public function restoreMessages(){
+        try {
+            $messageIds = Input::get('messageIds');
+            foreach($messageIds as $messageId){
+
+                $message = Message::findOrFail($messageId);
+
+                $message->restore();
+
+            }
+
+            return $this->responseConstructor
+                ->setResultCode(200)
+                ->setResultTitle("Messages restored!")
+                ->successResponse("Messages restored!");
+        }catch (Exception $e){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle("Error occured while news deletion")
+                ->respondWithError("Error occured while news deletion");
+        }
+
+
+
+    }
     /**
      * Returns UUID of 32 characters
      *
@@ -233,26 +305,33 @@ class MessageRepository implements MessageInterface {
      * @return mixed
      */
     public function retrieveShortMessages($bucketName,$userId){
+        try{
 
+            //$bucket = //Bucket::where('bucketName',strtolower($bucketName))->get(['bucketType']);
 
-        //$bucket = //Bucket::where('bucketName',strtolower($bucketName))->get(['bucketType']);
+            //$bucketType =  array_column($bucket->toArray(),'bucketType');
 
-        //$bucketType =  array_column($bucket->toArray(),'bucketType');
+            //$index = 0;
+            switch (constant(strtolower($bucketName))) {
+                case 1:
+                    return $this->retrieveInboxMessages($userId);
+                    break;
+                case 2:
+                    return $this->retrieveSentMessages($userId);
+                    break;
+                case 3:
+                    return $this->retrieveDraftMessages($userId);
+                    break;
+                case 4:
+                    return $this->retrieveTrashedMessages($userId);
+                    break;
+            }
+        }catch (Exception $e){
 
-        //$index = 0;
-        switch (constant(strtolower($bucketName))) {
-            case 1:
-                return $this->retrieveInboxMessages($userId);
-                break;
-            case 2:
-                return $this->retrieveSentMessages($userId);
-                break;
-            case 3:
-                return $this->retrieveDraftMessages($userId);
-                break;
-            case 4:
-                return $this->retrieveTrashedMessages($userId);
-                break;
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
         }
 
     }

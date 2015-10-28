@@ -322,6 +322,13 @@ class UsersRepository extends BaseRepository implements UserInterface
 
     }
 
+    public function generatePassword($l = 6)
+    {
+
+        return substr(md5(uniqid(mt_rand(), true)), 0, $l);
+
+    }
+
 
 
 }

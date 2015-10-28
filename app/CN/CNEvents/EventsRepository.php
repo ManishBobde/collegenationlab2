@@ -14,6 +14,7 @@ use App\CN\CNHelpers\PaginatorHelper;
 use App\CN\Transformers\EventTransformer;
 use App\Exceptions\ErrorCodes;
 use App\Exceptions\ResponseConstructor;
+use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Input;
@@ -41,25 +42,32 @@ class EventsRepository {
      */
     public function getEventsWithShortDescription($ttoken)
     {
-        $id = $this->getUserIdFromToken($ttoken);
+        try {
 
-        $collegeData = User::where('userId',$id)->get(['collegeId']);
+            $id = $this->getUserIdFromToken($ttoken);
 
-        $collegeId = $collegeData->pull('collegeId');
+            $collegeData = User::where('userId',$id)->get(['collegeId']);
 
-        $events = Events::where('collegeId',$collegeId);
+            $collegeId = $collegeData->pull('collegeId');
 
-        $data= $this->eventTrans->transformCollection($events->toArray());
+            $events = Events::where('collegeId',$collegeId);
 
-        $items = collect($data);
+            $data= $this->eventTrans->transformCollection($events->toArray());
 
-        $page = Input::get('page', 1);
+            $items = collect($data);
 
-        $perPage = 2;
+            $page = Input::get('page', 1);
 
-        $page  = new LengthAwarePaginator($items->forPage($page, $perPage),$items->count(), $perPage, $page);
+            $perPage = 2;
 
-        return $this->paginatorHelper->respondWithPagination($page);
+            $page  = new LengthAwarePaginator($items->forPage($page, $perPage),$items->count(), $perPage, $page);
+
+            return $this->paginatorHelper->respondWithPagination($page);
+        }catch(Exception $e){
+
+            throw new Exception("Error while retrieving events");
+
+        }
 
 
     }

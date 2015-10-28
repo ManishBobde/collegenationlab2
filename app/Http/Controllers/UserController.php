@@ -7,6 +7,7 @@ use App\Exceptions\ResponseConstructor;
 use App\Http\Requests\EmailRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use Event;
 use Illuminate\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -48,7 +49,7 @@ class UserController extends ApiController {
 		$this->request=$request;
 		$this->cnuser = $cnuser ;
 		$this->responseConstructor = $responseConstructor;
-		$this->middleware('jwt.auth', ['except' => array('registerUser', 'loginUser','sendPasswordOnUserEmail')]);	}
+		$this->middleware('jwt.auth', ['except' => array('registerUser', 'loginUser','sendPasswordOnUserEmail','forgotPassword')]);	}
 
 	/**
 	 * Show the application registration form.
@@ -220,13 +221,23 @@ class UserController extends ApiController {
 	 * @param $userId
 	 * @return string
 	 */
-	public function forgotPassword($userId){
+	public function forgotPassword(EmailRequest $request){
+		try {
+			$user = User::where('email', $request->input('email'))->firstOrFail();
 
-		$user = User::findOrFail($userId);
+			Event::fire(new ForgotPassword($user));
 
-		\Event::fire(new ForgotPassword($user));
+			return $this->responseConstructor
+				->setResultCode(200)
+				->setResultTitle("Mail Sent")
+				->successResponse("Mail Sent");
+		}catch (Exception $e){
 
-		return "Mail was sent successfully";
+			return $this->responseConstructor
+				->setResultCode(404)
+				->setResultTitle("User does not exist")
+				->respondWithError($e->getMessage());
+		}
 
 	}
 
@@ -249,7 +260,7 @@ class UserController extends ApiController {
 				Cache::forget('users_password_cache_'.$email);
 
 
-			$password = $this->generatePassword();
+			$password = $this->cnuser->generatePassword();
 
 			Cache::add('users_password_cache_'.$email, $password, 60);
 

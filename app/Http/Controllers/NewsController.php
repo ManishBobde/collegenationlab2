@@ -6,6 +6,7 @@ use App\CN\CNNews\News;
 use App\CN\CNNews\NewsRepository;
 use App\Exceptions\ErrorCodes;
 use App\Exceptions\ResponseConstructor;
+use Exception;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -60,8 +61,10 @@ class NewsController extends ApiController
             return response()->json($response, $statusCode);
 
         }catch (Exception $e){
-            $this->responseConstructor->setErrorCode(404)->respondWithError("Not Found!");
-        }
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());        }
     }
 
     /**
@@ -72,8 +75,16 @@ class NewsController extends ApiController
      */
     public function createNews(Request $request)
     {
+        try {
 
-        return $this->news->createNews($this->request->header('Authorization'));
+            return $this->news->createNews($this->request->header('Authorization'));
+        }catch(Exception $e){
+
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
+        }
     }
 
     /**
@@ -82,16 +93,23 @@ class NewsController extends ApiController
      * @param  int  $id
      * @return Response
      */
-    public function deleteNews($newsId)
+    public function deleteNews()
     {
-        $newsId = Input::get('newsId');
+        try {
+            $newsId = Input::get('newsIds');
 
-        News::destroy($newsId);
+            News::destroy([$newsId]);
 
-        return $this->responseConstructor
-            ->setResultCode(200)
-            ->setResultTitle("Deleted!")
-            ->successResponse("News Deleted!");
+            return $this->responseConstructor
+                ->setResultCode(200)
+                ->setResultTitle("News Deleted!")
+                ->successResponse("News Deleted!");
+        }catch (Exception $e){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle("Error occured while news deletion")
+                ->respondWithError("Error occured while news deletion");
+        }
     }
 
     /**
@@ -102,15 +120,26 @@ class NewsController extends ApiController
      */
     public function editNews($newsId)
     {
-        $news = News::find($newsId);
+        try {
 
-        if(is_null($news)){
+            $news = News::findOrFail($newsId);
 
-            return $this->responseConstructor->setErrorCode(404)->respondWithError("News Not Found!");
+            if(is_null($news)){
 
+                return $this->responseConstructor
+                    ->setResultCode(404)
+                    ->setResultTitle("News not found")
+                    ->respondWithError("News not found");
+
+            }
+
+            return $this->update($news);
+        }catch (Exception $e){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
         }
-
-        return $this->update($news);
     }
 
     /**
@@ -131,6 +160,8 @@ class NewsController extends ApiController
                 ->setResultCode(200)
                 ->setResultTitle("Updated News!")
                 ->successResponse("News Updated!");
+        }else{
+            throw new Exception("Validation error Or Update error");
         }
     }
 
@@ -141,7 +172,15 @@ class NewsController extends ApiController
      */
     public function getNewsItemsWithShortDescription(Request $request)
     {
-        return $this->news->getNewsItemsWithShortDescription($this->request->header('Authorization'));
+        try {
+            return $this->news->getNewsItemsWithShortDescription($this->request->header('Authorization'));
+        }catch (Exception $e){
+
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle($e->getMessage())
+                ->respondWithError($e->getMessage());
+        }
 
     }
 }

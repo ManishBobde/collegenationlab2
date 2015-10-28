@@ -1,7 +1,10 @@
 <?php namespace App\Http\Controllers;
 
 use App\CN\CNCollegeDepartments\CollegeDepartment;
+use App\CN\CNRoles\RoleEnum;
+use App\CN\CNUsers\User;
 use App\CN\CNUsers\UsersRepository;
+use App\Exceptions\ResponseConstructor;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
@@ -12,15 +15,20 @@ class DepartmentController extends ApiController
 {
 
 	protected $user;
+	/**
+	 * @var ResponseConstructor
+	 */
+	private $responseConstructor;
 
 	/**
 	 * @param MessageRepository $message
 	 */
-	public function __construct(UsersRepository $user){
+	public function __construct(UsersRepository $user,ResponseConstructor $responseConstructor){
 
 		//$this->auth = $auth;
 		$this->user = $user ;
 		$this->middleware('jwt.auth');
+		$this->responseConstructor = $responseConstructor;
 	}
 
 	/**
@@ -41,25 +49,48 @@ class DepartmentController extends ApiController
 	 */
 	public function createDepartment(DepartmentRegisterRequest $departmentRegisterRequest)
 	{
-		$hodEmailId = $departmentRegisterRequest->get('hodEmailId');
+		try {
 
-		$deptData = $departmentRegisterRequest->all();
+			$deptData = $departmentRegisterRequest->all();
 
-		$dept = new CollegeDepartment();
 
-		$dept->teacherStrength=$deptData['totalLecturers'];
-		$dept->academicYears =$deptData['academicYears'];
-		$dept->streamCapacity =$deptData['streamCapacity'];
-		$dept->totalCapacity =$deptData['academicYears']*$deptData['streamCapacity'];
-		$dept->deptRegistrationToken =$this->getGUID();
-		$dept->collegeId=$deptData['collegeId'];
-		$dept->deptId=$deptData['deptId'];
+			$dept = new CollegeDepartment();
 
-		$dept->save();
+			$dept->departmentDomain = $deptData['departmentDomain'];
+			$dept->streamId = $deptData['streamId'];
+			$dept->departmentName = $deptData['departmentName'];
 
-		return "Department created successfully";
-		//$this->user->createUser();
+			$dept->teacherStrength = $deptData['totalLecturers'];
+			$dept->academicYears = $deptData['totalAcademicYears'];
+			$dept->departmentSeatingCapacity = $deptData['departmentSeatingCapacity'];
+			$dept->totalSeatingCapacity = $deptData['totalSeatingCapacity'];
+			$dept->deptRegistrationToken = $this->getGUID();
+			$dept->collegeId = $deptData['collegeId'];
 
+			$dept->save();
+
+			$user = new User();
+			$user->email = $deptData['hodEmailId'];
+			$user->firstName = $deptData['hodFirstName'];
+			$user->lastName = $deptData['hodLastName'];
+			$user->roleId = RoleEnum::HOD;
+			$user->deptId = $dept->collegeDeptId;
+			$user->password = bcrypt($this->user->generatePassword());
+			$user->registrationToken = $dept->deptRegistrationToken;
+			$user->collegeId = $dept->collegeId;
+
+
+			$user->save();
+
+			return response()->json(["departmentId"=>$dept->deptRegistrationToken], 200);
+			//$this->user->createUser();
+		}catch (Exception $e){
+
+			return $this->responseConstructor
+				->setResultCode(404)
+				->setResultTitle("Error occurred while creating department")
+				->respondWithError("Department not created");
+		}
 	}
 
 	private function getGUID(){

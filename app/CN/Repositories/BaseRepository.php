@@ -20,8 +20,6 @@ use Illuminate\Support\Facades\Input;
 use App\CN\CNAccessTokens\AccessToken;
 use Tymon\JWTAuth\JWTAuth;
 
-
-
 abstract class BaseRepository {
 
     protected $errorCodes;

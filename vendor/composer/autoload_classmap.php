@@ -27,6 +27,8 @@ return array(
     'CreatePermissionUserPivotTable' => $baseDir . '/database/migrations/2015_07_18_112212_create_permission_user_pivot_table.php',
     'CreatePermissionsTable' => $baseDir . '/database/migrations/2015_07_18_112210_create_permissions_table.php',
     'CreateRolesTable' => $baseDir . '/database/migrations/2015_07_18_110213_create_roles_table.php',
+    'CreateSectionsTable' => $baseDir . '/database/migrations/2015_10_24_144145_create_sections_table.php',
+    'CreateSemesterTable' => $baseDir . '/database/migrations/2015_10_24_143806_create_semester_table.php',
     'CreateSubscriptionsTable' => $baseDir . '/database/migrations/2015_09_05_131552_create_subscriptions_table.php',
     'CreateUsersTable' => $baseDir . '/database/migrations/2015_07_18_110362_create_users_table.php',
     'DatabaseSeeder' => $baseDir . '/database/seeds/DatabaseSeeder.php',

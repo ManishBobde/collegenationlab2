@@ -4,6 +4,9 @@ namespace App\Handlers\Events;
 
 use App\Events\ForgotPassword;
 use App\Events\UserRegistered;
+use App\Exceptions\ResponseConstructor;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Mail\Message;
@@ -18,6 +21,14 @@ class EmailForgotPasswdLink implements ShouldBeQueued
     use ResetsPasswords;
 
     protected $mailer;
+    /**
+     * @var PasswordBroker
+     */
+    private $passwordBroker;
+    /**
+     * @var ResponseConstructor
+     */
+    private $responseConstructor;
 
 
     /**
@@ -25,9 +36,11 @@ class EmailForgotPasswdLink implements ShouldBeQueued
      *
      * @param Mailer $mailer
      */
-    public function __construct(Mailer $mailer)
+    public function __construct(Mailer $mailer,PasswordBroker $passwordBroker,ResponseConstructor $responseConstructor)
     {
         $this->mailer = $mailer;
+        $this->passwordBroker = $passwordBroker;
+        $this->responseConstructor = $responseConstructor;
     }
 
     /**
@@ -40,34 +53,40 @@ class EmailForgotPasswdLink implements ShouldBeQueued
     {
         //$salt = env('SALT', 'manish');
 
-
-        $user = $event->user;
-
-        $first_name = $user->first_name;
-        $email = $user->email;
-
-        $response = $this->passwords->sendResetLink($email, function($message)
-        {
-            $message->subject('Password Reminder');
-        });
-
-/*
-        Mail::queue('emails.email',['email' =>$email,function($m) use ($first_name,$email){
-
-            // $m->from("bobdemanish3@gmail.com");
-            $m->to($email ,$first_name)->subject('Forgot Password Link');
+        try {
+            $user = $event->user;
 
 
-        });*/
+            $first_name = $user->firstName;
+            $email = $user->email;
 
-        switch ($response) {
-            case Password::RESET_LINK_SENT:
-                return redirect()->back()->with('status', trans($response));
+            $response = $this->passwordBroker->sendResetLink(array("email" => $email), function ($message) {
+                $message->subject('Password Reminder');
+            });
 
-            case Password::INVALID_USER:
-                return redirect()->back()->withErrors(['email' => trans($response)]);
+            /*
+                    Mail::queue('emails.email',['email' =>$email,function($m) use ($first_name,$email){
+
+                        // $m->from("bobdemanish3@gmail.com");
+                        $m->to($email ,$first_name)->subject('Forgot Password Link');
+
+
+                    });*/
+
+            switch ($response) {
+                case Password::RESET_LINK_SENT:
+                    return redirect()->back()->with('status', trans($response));
+
+                case Password::INVALID_USER:
+                    return redirect()->back()->withErrors(['email' => trans($response)]);
+            }
+        }catch (RequestException $e ){
+            return $this->responseConstructor
+                ->setResultCode(404)
+                ->setResultTitle("Error Ocurred while sending mail")
+                ->respondWithError($e->getMessage());
+
         }
-
        /* $first_name = $user->first_name;
         $email = $user->email;
         Mail::queue('auth.passwordlink',['token' =>$token] ,function($m) use ($first_name,$email){

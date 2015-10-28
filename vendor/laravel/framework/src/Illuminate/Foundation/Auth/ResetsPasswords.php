@@ -78,7 +78,6 @@ trait ResetsPasswords {
 		{
 			throw new NotFoundHttpException;
 		}
-
 		return view('auth.reset')->with('token', $token);
 	}
 
@@ -133,7 +132,7 @@ trait ResetsPasswords {
 			return $this->redirectPath;
 		}
 
-		return property_exists($this, 'redirectTo') ? $this->redirectTo : '/home';
+		return property_exists($this, 'redirectTo') ? $this->redirectTo : '/auth/login';
 	}
 
 }

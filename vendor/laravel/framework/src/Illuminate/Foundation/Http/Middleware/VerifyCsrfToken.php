@@ -73,6 +73,7 @@ class VerifyCsrfToken implements Middleware {
 	 */
 	protected function addCookieToResponse($request, $response)
 	{
+		dd($response->headers);
 		$response->headers->setCookie(
 			new Cookie('XSRF-TOKEN', $request->session()->token(), time() + 60 * 120, '/', null, false, false)
 		);
